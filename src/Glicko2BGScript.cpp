@@ -22,6 +22,8 @@
 #include "Config.h"
 #include "Glicko2PlayerStorage.h"
 #include "BattlegroundMMR.h"
+#include "ArenaMMR.h"
+#include "ArenaRatingStorage.h"
 #include "Log.h"
 #include "GameTime.h"
 #include <unordered_map>
@@ -129,6 +131,67 @@ public:
         if (!sConfigMgr->GetOption<bool>("Glicko2.Enabled", true))
             return;
 
+        // Handle arena matches separately
+        if (bg->isArena())
+        {
+            if (!sConfigMgr->GetOption<bool>("Glicko2.Arena.Enabled", true))
+                return;
+
+            std::lock_guard lock(_matchMutex);
+
+            uint32 instanceId = bg->GetInstanceID();
+            auto itr = _activeMatches.find(instanceId);
+
+            if (itr == _activeMatches.end())
+            {
+                LOG_INFO("module.glicko2", "[Glicko2 Arena] Processing match for instance {}, winner: {}",
+                    instanceId, winnerTeamId);
+
+                // Determine arena bracket
+                ArenaBracket bracket = ArenaBracket::SLOT_SKIRMISH;
+                uint8 arenaType = bg->GetArenaType();
+
+                if (arenaType == 2)
+                    bracket = ArenaBracket::SLOT_2v2;
+                else if (arenaType == 3)
+                    bracket = ArenaBracket::SLOT_3v3;
+                else if (arenaType == 5)
+                    bracket = ArenaBracket::SLOT_5v5;
+
+                // Collect all players by team
+                std::vector<ObjectGuid> winnerGuids;
+                std::vector<ObjectGuid> loserGuids;
+
+                auto const& players = bg->GetPlayers();
+                for (auto const& [guid, player_ref] : players)
+                {
+                    if (!player_ref)
+                        continue;
+
+                    if (player_ref->GetBgTeamId() == winnerTeamId)
+                        winnerGuids.push_back(guid);
+                    else
+                        loserGuids.push_back(guid);
+                }
+
+                LOG_INFO("module.glicko2", "[Glicko2 Arena] Match complete - Bracket: {}, Winners: {}, Losers: {}",
+                    static_cast<uint8>(bracket), winnerGuids.size(), loserGuids.size());
+
+                // Update all player ratings
+                if (!winnerGuids.empty() && !loserGuids.empty())
+                {
+                    sArenaMMRMgr->UpdateArenaMatch(bg, winnerGuids, loserGuids, bracket);
+                }
+
+                // Mark as processed so we only update once
+                auto& match = _activeMatches[instanceId];
+                match.processed = true;
+            }
+
+            return; // Done with arena, skip battleground logic
+        }
+
+        // Battleground logic (existing)
         LOG_INFO("module.glicko2", "[Glicko2] OnBattlegroundEndReward fired for player {} in BG instance {}, winner: {}",
             player->GetName(), bg->GetInstanceID(), winnerTeamId);
 
@@ -229,6 +292,74 @@ public:
         PoolKey key{queue, bracketId};
         PoolTracker& pool = _poolTracking[key];
 
+        // Check if this is an arena group
+        if (IsArenaGroup(group))
+        {
+            if (!sConfigMgr->GetOption<bool>("Glicko2.Arena.Enabled", true))
+                return true;
+
+            // Determine arena bracket from ArenaType field
+            ArenaBracket bracket = ArenaBracket::SLOT_SKIRMISH;
+
+            if (group->ArenaType == 2)
+                bracket = ArenaBracket::SLOT_2v2;
+            else if (group->ArenaType == 3)
+                bracket = ArenaBracket::SLOT_3v3;
+            else if (group->ArenaType == 5)
+                bracket = ArenaBracket::SLOT_5v5;
+
+            // For skirmish or non-standard arena types, check if separate rating is enabled
+            if (bracket == ArenaBracket::SLOT_SKIRMISH && !sConfigMgr->GetOption<bool>("Glicko2.Arena.SkirmishSeparateRating", true))
+            {
+                // If skirmish doesn't use separate rating, fall back to 2v2 bracket
+                bracket = ArenaBracket::SLOT_2v2;
+            }
+
+            // If pool is empty (starting fresh), clear tracking and allow first group
+            if (poolPlayerCount == 0)
+            {
+                pool.Clear();
+                pool.AddGroup(group);
+                LOG_DEBUG("module.glicko2", "[Glicko2 Arena] First group added to pool, MMR: {:.1f}, Bracket: {}",
+                    CalculateGroupArenaRating(group, bracket), static_cast<uint8>(bracket));
+                return true;
+            }
+
+            // Calculate average MMR of the group being considered
+            float groupAvgMMR = CalculateGroupArenaRating(group, bracket);
+
+            // Calculate average MMR of players already in pool
+            float poolAvgMMR = CalculatePoolArenaRating(pool.players, bracket);
+
+            // Calculate how long this group has been in queue
+            uint32 queueTimeMS = GameTime::GetGameTimeMS().count() - group->JoinTime;
+            uint32 queueTimeSec = queueTimeMS / 1000;
+
+            // Get bracket-specific relaxation settings
+            float initialRange = sArenaMMRMgr->GetInitialRange(bracket);
+            float maxRange = sArenaMMRMgr->GetMaxRange(bracket);
+            float relaxationRate = sArenaMMRMgr->GetRelaxationRate(bracket);
+
+            // Calculate current MMR range with time-based relaxation
+            float currentRange = initialRange + (relaxationRate * queueTimeSec);
+            currentRange = std::min(currentRange, maxRange);
+
+            float mmrDiff = std::abs(groupAvgMMR - poolAvgMMR);
+            bool allowed = mmrDiff <= currentRange;
+
+            LOG_DEBUG("module.glicko2", "[Glicko2 Arena] Bracket: {}, Group MMR: {:.1f}, Pool MMR: {:.1f}, Diff: {:.1f}, Range: {:.1f}, Queue: {}s - {}",
+                static_cast<uint8>(bracket), groupAvgMMR, poolAvgMMR, mmrDiff, currentRange, queueTimeSec, allowed ? "ALLOWED" : "REJECTED");
+
+            // If allowed, track this group in the pool
+            if (allowed)
+            {
+                pool.AddGroup(group);
+            }
+
+            return allowed;
+        }
+
+        // Battleground matchmaking logic
         // If pool is empty (starting fresh), clear tracking and allow first group
         if (poolPlayerCount == 0)
         {
@@ -392,6 +523,53 @@ private:
             LOG_DEBUG("module.glicko2", "Player GUID {} rating updated: {:.1f} -> {:.1f} ({})",
                 guid.ToString(), oldRating.rating, newRating.rating, won ? "WIN" : "LOSS");
         }
+    }
+
+    /// @brief Check if group is queued for an arena
+    bool IsArenaGroup(GroupQueueInfo* group) const
+    {
+        if (!group)
+            return false;
+
+        BattlegroundTypeId bgTypeId = group->BgTypeId;
+        return bgTypeId == BATTLEGROUND_AA || // All arenas use BATTLEGROUND_AA
+               bgTypeId == BATTLEGROUND_NA ||
+               bgTypeId == BATTLEGROUND_BE ||
+               bgTypeId == BATTLEGROUND_RL ||
+               bgTypeId == BATTLEGROUND_DS ||
+               bgTypeId == BATTLEGROUND_RV;
+    }
+
+    /// @brief Calculate average arena rating for a group
+    float CalculateGroupArenaRating(GroupQueueInfo* group, ArenaBracket bracket)
+    {
+        if (!group || group->Players.empty())
+            return sArenaMMRMgr->GetInitialRating();
+
+        float totalRating = 0.0f;
+        for (ObjectGuid guid : group->Players)
+        {
+            ArenaRatingData data = sArenaRatingStorage->GetRating(guid, bracket);
+            totalRating += data.rating;
+        }
+
+        return totalRating / static_cast<float>(group->Players.size());
+    }
+
+    /// @brief Calculate average arena rating for players in pool
+    float CalculatePoolArenaRating(std::unordered_set<ObjectGuid> const& players, ArenaBracket bracket)
+    {
+        if (players.empty())
+            return sArenaMMRMgr->GetInitialRating();
+
+        float totalRating = 0.0f;
+        for (ObjectGuid guid : players)
+        {
+            ArenaRatingData data = sArenaRatingStorage->GetRating(guid, bracket);
+            totalRating += data.rating;
+        }
+
+        return totalRating / static_cast<float>(players.size());
     }
 };
 
