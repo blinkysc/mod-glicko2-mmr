@@ -15,19 +15,31 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "ScriptMgr.h"
+#include "ArenaMMR.h"
+#include "BattlegroundMMR.h"
 #include "Log.h"
 
-void AddGlicko2PlayerScripts();
-void AddGlicko2BGScripts();
-void AddGlicko2CommandScripts();
-void AddGlicko2WorldScripts();
-
-void Addmod_glicko2_mmrScripts()
+class Glicko2WorldScript : public WorldScript
 {
-    LOG_INFO("server.loading", ">> Loading mod-glicko2-mmr module...");
-    AddGlicko2WorldScripts();
-    AddGlicko2PlayerScripts();
-    AddGlicko2BGScripts();
-    AddGlicko2CommandScripts();
-    LOG_INFO("server.loading", ">> Module mod-glicko2-mmr loaded successfully!");
+public:
+    Glicko2WorldScript() : WorldScript("Glicko2WorldScript") { }
+
+    void OnStartup() override
+    {
+        LOG_INFO("module", ">> Loading Glicko-2 MMR System...");
+
+        // Load battleground MMR configuration
+        sBattlegroundMMRMgr->LoadConfig();
+
+        // Load arena MMR configuration
+        sArenaMMRMgr->LoadConfig();
+
+        LOG_INFO("module", ">> Glicko-2 MMR System loaded successfully!");
+    }
+};
+
+void AddGlicko2WorldScripts()
+{
+    new Glicko2WorldScript();
 }

@@ -75,7 +75,7 @@ void ArenaRatingStorage::RemoveAllRatings(ObjectGuid playerGuid)
 {
     std::unique_lock lock(_mutex);
 
-    for (uint8 i = 0; i < static_cast<uint8>(ArenaBracket::MAX_BRACKETS); ++i)
+    for (uint8 i = 0; i < static_cast<uint8>(ArenaBracket::MAX_SLOTS); ++i)
     {
         RatingKey key{playerGuid, static_cast<ArenaBracket>(i)};
         _ratings.erase(key);
@@ -187,7 +187,7 @@ void ArenaRatingStorage::SaveAllRatings(ObjectGuid playerGuid)
 {
     std::shared_lock lock(_mutex);
 
-    for (uint8 i = 0; i < static_cast<uint8>(ArenaBracket::MAX_BRACKETS); ++i)
+    for (uint8 i = 0; i < static_cast<uint8>(ArenaBracket::MAX_SLOTS); ++i)
     {
         ArenaBracket bracket = static_cast<ArenaBracket>(i);
         RatingKey key{playerGuid, bracket};
