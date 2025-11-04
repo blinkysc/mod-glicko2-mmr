@@ -327,8 +327,8 @@ public:
             float maxRange = sArenaMMRMgr->GetMaxRange(bracket);
             float relaxationRate = sArenaMMRMgr->GetRelaxationRate(bracket);
 
-            // Calculate current MMR range with time-based relaxation
-            float currentRange = initialRange + (relaxationRate * queueTimeSec);
+            // Calculate current MMR range with time-based relaxation (per 30 seconds)
+            float currentRange = initialRange + (relaxationRate * queueTimeSec / 30.0f);
             currentRange = std::min(currentRange, maxRange);
 
             float mmrDiff = std::abs(groupAvgMMR - poolAvgMMR);
@@ -372,8 +372,8 @@ public:
         float maxRange = sConfigMgr->GetOption<float>("Glicko2.Matchmaking.MaxRange", 1000.0f);
         float relaxationRate = sConfigMgr->GetOption<float>("Glicko2.Matchmaking.RelaxationRate", 10.0f);
 
-        // Calculate current MMR range with time-based relaxation
-        float currentRange = initialRange + (relaxationRate * queueTimeSec);
+        // Calculate current MMR range with time-based relaxation (per 30 seconds)
+        float currentRange = initialRange + (relaxationRate * queueTimeSec / 30.0f);
         currentRange = std::min(currentRange, maxRange);
 
         float mmrDiff = std::abs(groupAvgMMR - poolAvgMMR);

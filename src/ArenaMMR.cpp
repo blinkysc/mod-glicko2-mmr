@@ -146,8 +146,8 @@ float ArenaMMRMgr::GetRelaxedMMRRange(uint32 queueTimeSeconds, ArenaBracket brac
 {
     const BracketSettings& settings = _bracketSettings[static_cast<uint8>(bracket)];
 
-    // Linear relaxation: initialRange + (relaxationRate * time)
-    float currentRange = settings.initialRange + (settings.relaxationRate * queueTimeSeconds);
+    // Linear relaxation: initialRange + (relaxationRate * time / 30 seconds)
+    float currentRange = settings.initialRange + (settings.relaxationRate * queueTimeSeconds / 30.0f);
 
     // Cap at maximum range
     return std::min(currentRange, settings.maxRange);
