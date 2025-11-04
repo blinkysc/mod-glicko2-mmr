@@ -31,9 +31,8 @@ enum class ArenaBracket : uint8
     SLOT_2v2 = 0,       ///< 2v2 rated arena (slot 0)
     SLOT_3v3 = 1,       ///< 3v3 rated arena (slot 1)
     SLOT_5v5 = 2,       ///< 5v5 rated arena (slot 2)
-    SLOT_SKIRMISH = 3,  ///< Arena skirmish (slot 3, separate rating)
 
-    MAX_SLOTS = 4
+    MAX_SLOTS = 3
 };
 
 /// @brief Arena rating data for a specific bracket
@@ -136,19 +135,15 @@ private:
 #define sArenaRatingStorage ArenaRatingStorage::instance()
 
 /// @brief Helper function to get arena slot from arena type
-inline ArenaBracket GetArenaSlot(uint8 arenaType, bool isRated)
+inline ArenaBracket GetArenaSlot(uint8 arenaType, bool /*isRated*/)
 {
-    // Skirmish if not rated
-    if (!isRated)
-        return ArenaBracket::SLOT_SKIRMISH;
-
     // Map arena type to slot (matches character_arena_stats.slot)
     switch (arenaType)
     {
         case 2: return ArenaBracket::SLOT_2v2;  // ARENA_TYPE_2v2 -> slot 0
         case 3: return ArenaBracket::SLOT_3v3;  // ARENA_TYPE_3v3 -> slot 1
         case 5: return ArenaBracket::SLOT_5v5;  // ARENA_TYPE_5v5 -> slot 2
-        default: return ArenaBracket::SLOT_SKIRMISH;
+        default: return ArenaBracket::SLOT_2v2;
     }
 }
 
@@ -160,7 +155,6 @@ inline const char* GetBracketName(ArenaBracket bracket)
         case ArenaBracket::SLOT_2v2: return "2v2";
         case ArenaBracket::SLOT_3v3: return "3v3";
         case ArenaBracket::SLOT_5v5: return "5v5";
-        case ArenaBracket::SLOT_SKIRMISH: return "Skirmish";
         default: return "Unknown";
     }
 }

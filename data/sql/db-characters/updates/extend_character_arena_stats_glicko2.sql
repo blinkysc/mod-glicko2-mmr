@@ -15,4 +15,3 @@ ALTER TABLE `character_arena_stats`
 -- slot 0 = 2v2 arena
 -- slot 1 = 3v3 arena
 -- slot 2 = 5v5 arena
--- We can use slot 3 for skirmish ratings if needed

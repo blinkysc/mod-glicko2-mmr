@@ -20,10 +20,10 @@
 #
 #    Glicko2.Enabled
 #        Description: Enable or disable the Glicko-2 MMR system for battlegrounds
-#        Default:     1 (enabled)
+#        Default:     0 (disabled)
 #
 
-Glicko2.Enabled = 1
+Glicko2.Enabled = 0
 
 #
 #    Glicko2.InitialRating
@@ -61,15 +61,9 @@ Glicko2.InitialVolatility = 0.06
 
 Glicko2.Tau = 0.5
 
-#
-#    Glicko2.Matchmaking.Enabled
-#        Description: Enable MMR-based matchmaking for battlegrounds
-#                     When enabled, players will only be matched with others
-#                     within a certain MMR range
-#        Default:     1 (enabled)
-#
-
-Glicko2.Matchmaking.Enabled = 1
+###################################################################################################
+# BATTLEGROUND MATCHMAKING CONFIGURATION
+###################################################################################################
 
 #
 #    Glicko2.Matchmaking.InitialRange
@@ -115,11 +109,11 @@ Glicko2.Matchmaking.RelaxationInterval = 5
 #
 #    Glicko2.Arena.Enabled
 #        Description: Enable Glicko-2 ratings for arenas (replaces standard arena ratings)
-#                     Provides separate ratings for each bracket (2v2, 3v3, 5v5, skirmish)
-#        Default:     1 (enabled)
+#                     Provides separate ratings for each bracket (2v2, 3v3, 5v5)
+#        Default:     0 (disabled)
 #
 
-Glicko2.Arena.Enabled = 1
+Glicko2.Arena.Enabled = 0
 
 #
 #    Glicko2.Arena.InitialRating
@@ -153,16 +147,6 @@ Glicko2.Arena.InitialVolatility = 0.06
 
 Glicko2.Arena.Tau = 0.5
 
-#
-#    Glicko2.Arena.SkirmishSeparateRating
-#        Description: Use separate rating for skirmishes vs rated arenas
-#                     If enabled, skirmishes have their own rating pool
-#                     If disabled, skirmishes use same rating as rated for that bracket size
-#        Default:     1 (enabled)
-#
-
-Glicko2.Arena.SkirmishSeparateRating = 1
-
 ###################################################################################################
 # ARENA MATCHMAKING - PER BRACKET CONFIGURATION
 ###################################################################################################
@@ -193,14 +177,5 @@ Glicko2.Arena.3v3.Matchmaking.RelaxationRate = 12.0
 Glicko2.Arena.5v5.Matchmaking.InitialRange = 250.0
 Glicko2.Arena.5v5.Matchmaking.MaxRange = 1200.0
 Glicko2.Arena.5v5.Matchmaking.RelaxationRate = 10.0
-
-#
-#    Glicko2.Arena.Skirmish.Matchmaking.*
-#        Description: Matchmaking settings for arena skirmishes (more lenient)
-#
-
-Glicko2.Arena.Skirmish.Matchmaking.InitialRange = 300.0
-Glicko2.Arena.Skirmish.Matchmaking.MaxRange = 1500.0
-Glicko2.Arena.Skirmish.Matchmaking.RelaxationRate = 20.0
 
 ###################################################################################################

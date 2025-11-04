@@ -94,7 +94,7 @@ void ArenaMMRMgr::UpdatePlayerRating(ObjectGuid playerGuid, ArenaBracket bracket
     sArenaRatingStorage->SetRating(playerGuid, bracket, playerData);
 }
 
-void ArenaMMRMgr::UpdateArenaMatch(Battleground* bg, std::vector<ObjectGuid> const& winnerGuids,
+void ArenaMMRMgr::UpdateArenaMatch(Battleground* /*bg*/, std::vector<ObjectGuid> const& winnerGuids,
                                    std::vector<ObjectGuid> const& loserGuids, ArenaBracket bracket)
 {
     if (!_enabled || winnerGuids.empty() || loserGuids.empty())
@@ -171,12 +171,11 @@ float ArenaMMRMgr::GetRelaxationRate(ArenaBracket bracket) const
 void ArenaMMRMgr::LoadConfig()
 {
     // Global arena settings
-    _enabled = sConfigMgr->GetOption<bool>("Glicko2.Arena.Enabled", true);
+    _enabled = sConfigMgr->GetOption<bool>("Glicko2.Arena.Enabled", false);
     _initialRating = sConfigMgr->GetOption<float>("Glicko2.Arena.InitialRating", 1500.0f);
     _initialRD = sConfigMgr->GetOption<float>("Glicko2.Arena.InitialRatingDeviation", 350.0f);
     _initialVolatility = sConfigMgr->GetOption<float>("Glicko2.Arena.InitialVolatility", 0.06f);
     _systemTau = sConfigMgr->GetOption<float>("Glicko2.Arena.Tau", 0.5f);
-    _skirmishSeparateRating = sConfigMgr->GetOption<bool>("Glicko2.Arena.SkirmishSeparateRating", true);
 
     // 2v2 settings
     _bracketSettings[static_cast<uint8>(ArenaBracket::SLOT_2v2)].initialRange =
@@ -201,14 +200,6 @@ void ArenaMMRMgr::LoadConfig()
         sConfigMgr->GetOption<float>("Glicko2.Arena.5v5.Matchmaking.MaxRange", 1200.0f);
     _bracketSettings[static_cast<uint8>(ArenaBracket::SLOT_5v5)].relaxationRate =
         sConfigMgr->GetOption<float>("Glicko2.Arena.5v5.Matchmaking.RelaxationRate", 10.0f);
-
-    // Skirmish settings (more lenient)
-    _bracketSettings[static_cast<uint8>(ArenaBracket::SLOT_SKIRMISH)].initialRange =
-        sConfigMgr->GetOption<float>("Glicko2.Arena.Skirmish.Matchmaking.InitialRange", 300.0f);
-    _bracketSettings[static_cast<uint8>(ArenaBracket::SLOT_SKIRMISH)].maxRange =
-        sConfigMgr->GetOption<float>("Glicko2.Arena.Skirmish.Matchmaking.MaxRange", 1500.0f);
-    _bracketSettings[static_cast<uint8>(ArenaBracket::SLOT_SKIRMISH)].relaxationRate =
-        sConfigMgr->GetOption<float>("Glicko2.Arena.Skirmish.Matchmaking.RelaxationRate", 20.0f);
 
     LOG_INFO("module", "ArenaMMRMgr: Loaded configuration (Enabled: {}, Initial Rating: {})",
         _enabled, _initialRating);

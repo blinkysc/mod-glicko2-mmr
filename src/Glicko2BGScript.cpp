@@ -106,7 +106,7 @@ public:
 
     void OnBattlegroundAddPlayer(Battleground* bg, Player* player) override
     {
-        if (!sConfigMgr->GetOption<bool>("Glicko2.Enabled", true))
+        if (!sConfigMgr->GetOption<bool>("Glicko2.Enabled", false))
             return;
 
         std::lock_guard lock(_matchMutex);
@@ -128,13 +128,13 @@ public:
 
     void OnBattlegroundEndReward(Battleground* bg, Player* player, TeamId winnerTeamId) override
     {
-        if (!sConfigMgr->GetOption<bool>("Glicko2.Enabled", true))
+        if (!sConfigMgr->GetOption<bool>("Glicko2.Enabled", false))
             return;
 
         // Handle arena matches separately
         if (bg->isArena())
         {
-            if (!sConfigMgr->GetOption<bool>("Glicko2.Arena.Enabled", true))
+            if (!sConfigMgr->GetOption<bool>("Glicko2.Arena.Enabled", false))
                 return;
 
             std::lock_guard lock(_matchMutex);
@@ -147,9 +147,9 @@ public:
                 LOG_INFO("module.glicko2", "[Glicko2 Arena] Processing match for instance {}, winner: {}",
                     instanceId, winnerTeamId);
 
-                // Determine arena bracket
-                ArenaBracket bracket = ArenaBracket::SLOT_SKIRMISH;
+                // Determine arena bracket from arena type
                 uint8 arenaType = bg->GetArenaType();
+                ArenaBracket bracket = ArenaBracket::SLOT_2v2; // Default to 2v2
 
                 if (arenaType == 2)
                     bracket = ArenaBracket::SLOT_2v2;
@@ -246,7 +246,7 @@ public:
 
     void OnBattlegroundRemovePlayerAtLeave(Battleground* bg, Player* player) override
     {
-        if (!sConfigMgr->GetOption<bool>("Glicko2.Enabled", true))
+        if (!sConfigMgr->GetOption<bool>("Glicko2.Enabled", false))
             return;
 
         LOG_INFO("module.glicko2", "[Glicko2] Player {} leaving BG instance {}, status: {}",
@@ -255,10 +255,7 @@ public:
 
     bool GetPlayerMatchmakingRating(ObjectGuid playerGuid, BattlegroundTypeId /*bgTypeId*/, float& outRating) override
     {
-        if (!sConfigMgr->GetOption<bool>("Glicko2.Enabled", true))
-            return false;
-
-        if (!sConfigMgr->GetOption<bool>("Glicko2.Matchmaking.Enabled", true))
+        if (!sConfigMgr->GetOption<bool>("Glicko2.Enabled", false))
             return false;
 
         BattlegroundRatingData data = sGlicko2Storage->GetRating(playerGuid);
@@ -275,10 +272,7 @@ public:
     bool CanAddGroupToMatchingPool(BattlegroundQueue* queue, GroupQueueInfo* group, uint32 poolPlayerCount,
                                    Battleground* /*bg*/, BattlegroundBracketId bracketId) override
     {
-        if (!sConfigMgr->GetOption<bool>("Glicko2.Enabled", true))
-            return true;
-
-        if (!sConfigMgr->GetOption<bool>("Glicko2.Matchmaking.Enabled", true))
+        if (!sConfigMgr->GetOption<bool>("Glicko2.Enabled", false))
             return true;
 
         if (!group || group->Players.empty())
@@ -295,11 +289,11 @@ public:
         // Check if this is an arena group
         if (IsArenaGroup(group))
         {
-            if (!sConfigMgr->GetOption<bool>("Glicko2.Arena.Enabled", true))
+            if (!sConfigMgr->GetOption<bool>("Glicko2.Arena.Enabled", false))
                 return true;
 
             // Determine arena bracket from ArenaType field
-            ArenaBracket bracket = ArenaBracket::SLOT_SKIRMISH;
+            ArenaBracket bracket = ArenaBracket::SLOT_2v2; // Default to 2v2
 
             if (group->ArenaType == 2)
                 bracket = ArenaBracket::SLOT_2v2;
@@ -307,13 +301,6 @@ public:
                 bracket = ArenaBracket::SLOT_3v3;
             else if (group->ArenaType == 5)
                 bracket = ArenaBracket::SLOT_5v5;
-
-            // For skirmish or non-standard arena types, check if separate rating is enabled
-            if (bracket == ArenaBracket::SLOT_SKIRMISH && !sConfigMgr->GetOption<bool>("Glicko2.Arena.SkirmishSeparateRating", true))
-            {
-                // If skirmish doesn't use separate rating, fall back to 2v2 bracket
-                bracket = ArenaBracket::SLOT_2v2;
-            }
 
             // If pool is empty (starting fresh), clear tracking and allow first group
             if (poolPlayerCount == 0)

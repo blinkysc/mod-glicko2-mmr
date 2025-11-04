@@ -57,7 +57,6 @@ public:
 
     /// Configuration accessors
     bool IsEnabled() const { return _enabled; }
-    bool IsSkirmishSeparateRating() const { return _skirmishSeparateRating; }
     float GetInitialRating() const { return _initialRating; }
     float GetInitialRatingDeviation() const { return _initialRD; }
     float GetInitialVolatility() const { return _initialVolatility; }
@@ -84,7 +83,6 @@ private:
     float _initialRD = 350.0f;
     float _initialVolatility = 0.06f;
     float _systemTau = 0.5f;
-    bool _skirmishSeparateRating = true;
 
     /// Per-bracket matchmaking ranges
     struct BracketSettings
