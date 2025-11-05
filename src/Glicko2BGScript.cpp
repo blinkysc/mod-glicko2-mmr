@@ -124,7 +124,7 @@ public:
         if (match.startTime == 0)
             match.startTime = time(nullptr);
 
-        LOG_INFO("module.glicko2", "[Glicko2] Player {} added to BG instance {} (team: {})",
+        LOG_DEBUG("module.glicko2", "[Glicko2] Player {} added to BG instance {} (team: {})",
             player->GetName(), instanceId, player->GetBgTeamId() == TEAM_ALLIANCE ? "Alliance" : "Horde");
     }
 
@@ -141,7 +141,7 @@ public:
 
             if (itr == _activeMatches.end())
             {
-                LOG_INFO("module.glicko2", "[Glicko2 Arena] Processing match for instance {}, winner: {}",
+                LOG_DEBUG("module.glicko2", "[Glicko2 Arena] Processing match for instance {}, winner: {}",
                     instanceId, winnerTeamId);
 
                 // Determine arena bracket from arena type
@@ -171,7 +171,7 @@ public:
                         loserGuids.push_back(guid);
                 }
 
-                LOG_INFO("module.glicko2", "[Glicko2 Arena] Match complete - Bracket: {}, Winners: {}, Losers: {}",
+                LOG_DEBUG("module.glicko2", "[Glicko2 Arena] Match complete - Bracket: {}, Winners: {}, Losers: {}",
                     static_cast<uint8>(bracket), winnerGuids.size(), loserGuids.size());
 
                 // Update all player ratings
@@ -191,7 +191,7 @@ public:
         if (!sConfigMgr->GetOption<bool>("BattleGround.MMR.Enable", false))
             return;
 
-        LOG_INFO("module.glicko2", "[Glicko2] OnBattlegroundEndReward fired for player {} in BG instance {}, winner: {}",
+        LOG_DEBUG("module.glicko2", "[Glicko2] OnBattlegroundEndReward fired for player {} in BG instance {}, winner: {}",
             player->GetName(), bg->GetInstanceID(), winnerTeamId);
 
         std::lock_guard lock(_matchMutex);
@@ -201,7 +201,7 @@ public:
 
         if (itr == _activeMatches.end())
         {
-            LOG_INFO("module.glicko2", "[Glicko2] No match tracker found for BG instance {}, building from current BG state", instanceId);
+            LOG_DEBUG("module.glicko2", "[Glicko2] No match tracker found for BG instance {}, building from current BG state", instanceId);
             auto& match = _activeMatches[instanceId];
             match.winnerTeam = static_cast<uint32>(winnerTeamId);
 
@@ -214,7 +214,7 @@ public:
                     match.hordePlayers.insert(guid);
             }
 
-            LOG_INFO("module.glicko2", "[Glicko2] Built match tracker: {} Alliance, {} Horde players",
+            LOG_DEBUG("module.glicko2", "[Glicko2] Built match tracker: {} Alliance, {} Horde players",
                 match.alliancePlayers.size(), match.hordePlayers.size());
 
             itr = _activeMatches.find(instanceId);
@@ -227,7 +227,7 @@ public:
             match.winnerTeam = static_cast<uint32>(winnerTeamId);
             match.processed = true;
 
-            LOG_INFO("module.glicko2", "[Glicko2] Processing ratings for BG instance {}, winner: {}",
+            LOG_DEBUG("module.glicko2", "[Glicko2] Processing ratings for BG instance {}, winner: {}",
                 instanceId, match.winnerTeam);
 
             ProcessMatchRatings(bg, match);
@@ -239,7 +239,7 @@ public:
         if (match.alliancePlayers.empty() && match.hordePlayers.empty())
         {
             _activeMatches.erase(itr);
-            LOG_INFO("module.glicko2", "[Glicko2] BG instance {} cleanup complete, all players processed.", instanceId);
+            LOG_DEBUG("module.glicko2", "[Glicko2] BG instance {} cleanup complete, all players processed.", instanceId);
         }
     }
 
@@ -250,7 +250,7 @@ public:
         if (!bgEnabled && !arenaEnabled)
             return;
 
-        LOG_INFO("module.glicko2", "[Glicko2] Player {} leaving BG instance {}, status: {}",
+        LOG_DEBUG("module.glicko2", "[Glicko2] Player {} leaving BG instance {}, status: {}",
             player->GetName(), bg->GetInstanceID(), bg->GetStatus());
     }
 
@@ -403,7 +403,7 @@ private:
             return;
         }
 
-        LOG_INFO("module.glicko2", "Processing BG rating updates for instance {} (winner: {})",
+        LOG_DEBUG("module.glicko2", "Processing BG rating updates for instance {} (winner: {})",
             bg->GetInstanceID(), match.winnerTeam == ALLIANCE ? "Alliance" : "Horde");
 
         float allianceAvgMMR = CalculateAverageMMR(match.alliancePlayers);
@@ -417,7 +417,7 @@ private:
         UpdateTeamRatings(match.alliancePlayers, hordeAvgMMR, hordeAvgRD, match.winnerTeam == TEAM_ALLIANCE);
         UpdateTeamRatings(match.hordePlayers, allianceAvgMMR, allianceAvgRD, match.winnerTeam == TEAM_HORDE);
 
-        LOG_INFO("module.glicko2", "BG rating updates complete for instance {}", bg->GetInstanceID());
+        LOG_DEBUG("module.glicko2", "BG rating updates complete for instance {}", bg->GetInstanceID());
     }
 
     float CalculateAverageMMR(std::unordered_set<ObjectGuid> const& players)

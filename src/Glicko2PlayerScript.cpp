@@ -33,7 +33,7 @@ public:
             return;
 
         sGlicko2Storage->LoadRating(player->GetGUID());
-        LOG_INFO("module.glicko2", "[Glicko2] Player {} logged in, BG rating loaded.", player->GetName());
+        LOG_DEBUG("module.glicko2", "[Glicko2] Player {} logged in, BG rating loaded.", player->GetName());
     }
 
     void OnPlayerLogout(Player* player) override
