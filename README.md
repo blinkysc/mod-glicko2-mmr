@@ -13,6 +13,10 @@ A skill-based matchmaking rating system for battlegrounds using the Glicko-2 alg
 
 ## Installation
 
+**Prerequisites**: This module currently requires the arena hook PR from AzerothCore core:
+- **Required PR**: https://github.com/azerothcore/azerothcore-wotlk/pull/23543
+- Apply this PR to your AzerothCore installation before building the module
+
 1. Clone this repository into your AzerothCore `modules` directory:
 ```bash
 cd /path/to/azerothcore/modules
