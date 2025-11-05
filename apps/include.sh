@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-## ADD MODULE INCLUDE DIRECTORIES
-ModGlicko2MMR_SOURCES_DIR=$AC_PATH_MODULE
-
-AC_ADD_SCRIPT_INCLUDE "$ModGlicko2MMR_SOURCES_DIR/include"
+## Module include directories
+## No additional includes needed for this module
+exit 0
