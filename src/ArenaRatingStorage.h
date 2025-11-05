@@ -28,7 +28,7 @@ class Player;
 /// @brief Arena bracket types (maps to character_arena_stats.slot)
 enum class ArenaBracket : uint8
 {
-    SLOT_2v2 = 0,       ///< 2v2 rated arena (slot 0)
+    SLOT_2v2 = 33,       ///< 2v2 rated arena (slot 0)
     SLOT_3v3 = 1,       ///< 3v3 rated arena (slot 1)
     SLOT_5v5 = 2,       ///< 5v5 rated arena (slot 2)
 
