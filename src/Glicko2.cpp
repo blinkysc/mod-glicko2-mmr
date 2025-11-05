@@ -111,7 +111,7 @@ float Glicko2System::VolatilityFunction(float x, float delta, float phi, float v
     return term1 - term2;
 }
 
-float Glicko2System::IllinoisAlgorithm(float a, float delta, float phi, float variance, float sigma) const
+float Glicko2System::IllinoisAlgorithm(float a, float delta, float phi, float variance, float /*sigma*/) const
 {
     // Step 1: Initialize
     float A = a;

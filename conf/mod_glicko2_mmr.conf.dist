@@ -20,10 +20,10 @@
 #
 #    Glicko2.Enabled
 #        Description: Enable or disable the Glicko-2 MMR system for battlegrounds
-#        Default:     1 (enabled)
+#        Default:     0 (disabled)
 #
 
-Glicko2.Enabled = 1
+Glicko2.Enabled = 0
 
 #
 #    Glicko2.InitialRating
@@ -60,5 +60,152 @@ Glicko2.InitialVolatility = 0.06
 #
 
 Glicko2.Tau = 0.5
+
+###################################################################################################
+# BATTLEGROUND MATCHMAKING CONFIGURATION
+###################################################################################################
+
+#
+#    Glicko2.Matchmaking.InitialRange
+#        Description: Initial MMR range for matchmaking (in rating points)
+#                     Players within this range can be matched together when
+#                     they first join queue
+#        Default:     200.0
+#
+
+Glicko2.Matchmaking.InitialRange = 200.0
+
+#
+#    Glicko2.Matchmaking.MaxRange
+#        Description: Maximum MMR range after full relaxation (in rating points)
+#                     The range will never exceed this value, even after long waits
+#        Default:     1000.0
+#
+
+Glicko2.Matchmaking.MaxRange = 1000.0
+
+#
+#    Glicko2.Matchmaking.RelaxationRate
+#        Description: Rate at which MMR range expands per 30 seconds of queue time
+#                     (rating points per 30 seconds)
+#        Default:     10.0
+#
+
+Glicko2.Matchmaking.RelaxationRate = 10.0
+
+#
+#    Glicko2.Matchmaking.RelaxationInterval
+#        Description: How often (in seconds) to recalculate MMR range
+#                     Lower values = more responsive but slightly more CPU usage
+#        Default:     5 (seconds)
+#
+
+Glicko2.Matchmaking.RelaxationInterval = 5
+
+###################################################################################################
+# ARENA GLICKO-2 SYSTEM CONFIGURATION
+###################################################################################################
+
+#
+#    Glicko2.Arena.Enabled
+#        Description: Enable Glicko-2 ratings for arenas (replaces standard arena ratings)
+#                     Provides separate ratings for each bracket (2v2, 3v3, 5v5)
+#        Default:     0 (disabled)
+#
+
+Glicko2.Arena.Enabled = 0
+
+#
+#    Glicko2.Arena.InitialRating
+#        Description: Starting rating for new arena players
+#        Default:     1500.0
+#
+
+Glicko2.Arena.InitialRating = 1500.0
+
+#
+#    Glicko2.Arena.InitialRatingDeviation
+#        Description: Starting rating uncertainty (RD) for new arena players
+#        Default:     350.0
+#
+
+Glicko2.Arena.InitialRatingDeviation = 350.0
+
+#
+#    Glicko2.Arena.InitialVolatility
+#        Description: Starting volatility for new arena players
+#        Default:     0.06
+#
+
+Glicko2.Arena.InitialVolatility = 0.06
+
+#
+#    Glicko2.Arena.Tau
+#        Description: System volatility constraint for arenas
+#        Default:     0.5
+#
+
+Glicko2.Arena.Tau = 0.5
+
+###################################################################################################
+# ARENA MATCHMAKING - PER BRACKET CONFIGURATION
+###################################################################################################
+
+#
+#    Glicko2.Arena.2v2.Matchmaking.InitialRange
+#        Description: Initial MMR range for 2v2 arena matchmaking (in rating points)
+#        Default:     150.0
+#
+#    Glicko2.Arena.2v2.Matchmaking.MaxRange
+#        Description: Maximum MMR range after full relaxation (in rating points)
+#        Default:     800.0
+#
+#    Glicko2.Arena.2v2.Matchmaking.RelaxationRate
+#        Description: Rate at which MMR range expands per 30 seconds of queue time
+#                     (rating points per 30 seconds)
+#        Default:     15.0
+#
+
+Glicko2.Arena.2v2.Matchmaking.InitialRange = 150.0
+Glicko2.Arena.2v2.Matchmaking.MaxRange = 800.0
+Glicko2.Arena.2v2.Matchmaking.RelaxationRate = 15.0
+
+#
+#    Glicko2.Arena.3v3.Matchmaking.InitialRange
+#        Description: Initial MMR range for 3v3 arena matchmaking (in rating points)
+#        Default:     200.0
+#
+#    Glicko2.Arena.3v3.Matchmaking.MaxRange
+#        Description: Maximum MMR range after full relaxation (in rating points)
+#        Default:     1000.0
+#
+#    Glicko2.Arena.3v3.Matchmaking.RelaxationRate
+#        Description: Rate at which MMR range expands per 30 seconds of queue time
+#                     (rating points per 30 seconds)
+#        Default:     12.0
+#
+
+Glicko2.Arena.3v3.Matchmaking.InitialRange = 200.0
+Glicko2.Arena.3v3.Matchmaking.MaxRange = 1000.0
+Glicko2.Arena.3v3.Matchmaking.RelaxationRate = 12.0
+
+#
+#    Glicko2.Arena.5v5.Matchmaking.InitialRange
+#        Description: Initial MMR range for 5v5 arena matchmaking (in rating points)
+#        Default:     250.0
+#
+#    Glicko2.Arena.5v5.Matchmaking.MaxRange
+#        Description: Maximum MMR range after full relaxation (in rating points)
+#        Default:     1200.0
+#
+#    Glicko2.Arena.5v5.Matchmaking.RelaxationRate
+#        Description: Rate at which MMR range expands per 30 seconds of queue time
+#                     (rating points per 30 seconds)
+#        Default:     10.0
+#
+
+Glicko2.Arena.5v5.Matchmaking.InitialRange = 250.0
+Glicko2.Arena.5v5.Matchmaking.MaxRange = 1200.0
+Glicko2.Arena.5v5.Matchmaking.RelaxationRate = 10.0
 
 ###################################################################################################

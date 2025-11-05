@@ -6,9 +6,10 @@ A skill-based matchmaking rating system for battlegrounds using the Glicko-2 alg
 
 - **Glicko-2 Rating Algorithm**: Industry-standard rating system with rating deviation and volatility
 - **Automatic Rating Updates**: Ratings update automatically after battleground matches
+- **MMR-Based Matchmaking**: Optional queue-based matchmaking with time-based relaxation
 - **Persistent Storage**: Ratings stored in database and cached in memory for performance
 - **GM Commands**: View and manage player ratings with `.bgmmr` commands
-- **Configurable**: Adjust initial ratings, volatility, and system parameters
+- **Configurable**: Adjust initial ratings, volatility, matchmaking ranges, and relaxation rates
 
 ## Installation
 
@@ -41,11 +42,23 @@ cp /path/to/dist/etc/modules/mod_glicko2_mmr.conf.dist /path/to/dist/etc/modules
 
 Edit `mod_glicko2_mmr.conf`:
 
+### Rating System
+
 - `Glicko2.Enabled` - Enable/disable the system (default: 1)
 - `Glicko2.InitialRating` - Starting rating for new players (default: 1500.0)
 - `Glicko2.InitialRatingDeviation` - Starting uncertainty (default: 350.0)
 - `Glicko2.InitialVolatility` - Starting consistency measure (default: 0.06)
 - `Glicko2.Tau` - System volatility constraint (default: 0.5)
+
+### Matchmaking (Requires Core Hooks)
+
+**Note**: These features require the battleground matchmaking hooks to be installed in AzerothCore core. See [AzerothCore PR #XXXXX](link) for the required core changes.
+
+- `Glicko2.Matchmaking.Enabled` - Enable MMR-based matchmaking (default: 1)
+- `Glicko2.Matchmaking.InitialRange` - Initial MMR range for matches (default: 200.0)
+- `Glicko2.Matchmaking.MaxRange` - Maximum MMR range after relaxation (default: 1000.0)
+- `Glicko2.Matchmaking.RelaxationRate` - MMR range increase per second in queue (default: 10.0)
+- `Glicko2.Matchmaking.RelaxationInterval` - Recalculation interval in seconds (default: 5)
 
 ## GM Commands
 
@@ -79,6 +92,29 @@ The module uses the **Glicko-2** rating algorithm developed by Professor Mark Gl
 **Experienced Players (RD ≈ 100-150)**:
 - Typical match: ±20-40 rating points
 - Changes stabilize as the system becomes confident in skill level
+
+### Matchmaking System
+
+When matchmaking is enabled (requires core hooks), players are matched based on their MMR with time-based relaxation:
+
+**Initial Matching**:
+- Players join queue and their MMR is calculated
+- Initial MMR range: ±200 rating points (configurable)
+- Only players within this range can be matched together initially
+
+**Time-Based Relaxation**:
+- For every second in queue, the acceptable MMR range expands
+- Default expansion rate: 10 rating points per second
+- Maximum range: 1000 rating points (configurable)
+- Ensures matches form even with limited players
+
+**Example**:
+- Player with 1500 MMR joins queue
+- 0 seconds: Will match with 1300-1700 MMR players
+- 30 seconds: Will match with 1000-2000 MMR players
+- 60 seconds: Will match with 700-2300 MMR players (capped at max range)
+
+This system balances match quality with reasonable queue times.
 
 ## Database Schema
 
