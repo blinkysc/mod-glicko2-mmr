@@ -19,11 +19,6 @@ git clone https://github.com/yourusername/mod-glicko2-mmr.git
 ```
 
 2. Re-run CMake and rebuild:
-```bash
-cd /path/to/azerothcore/build
-cmake ../ -DCMAKE_INSTALL_PREFIX=$HOME/azerothcore/env/dist/
-cmake --build . --target install -j$(nproc)
-```
 
 3. Import the SQL files:
 ```bash
