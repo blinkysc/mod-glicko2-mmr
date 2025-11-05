@@ -50,7 +50,7 @@ public:
 
     static bool HandleBGMMRInfoCommand(ChatHandler* handler, Optional<PlayerIdentifier> player)
     {
-        if (!sConfigMgr->GetOption<bool>("Glicko2.Enabled", true))
+        if (!sConfigMgr->GetOption<bool>("BattleGround.MMR.Enable", false))
         {
             handler->SendSysMessage("Battleground MMR system is disabled.");
             return true;
@@ -89,7 +89,7 @@ public:
 
     static bool HandleBGMMRSetCommand(ChatHandler* handler, Optional<PlayerIdentifier> player, float rating)
     {
-        if (!sConfigMgr->GetOption<bool>("Glicko2.Enabled", true))
+        if (!sConfigMgr->GetOption<bool>("BattleGround.MMR.Enable", false))
         {
             handler->SendSysMessage("Battleground MMR system is disabled.");
             return true;
@@ -118,7 +118,7 @@ public:
 
     static bool HandleBGMMRResetCommand(ChatHandler* handler, Optional<PlayerIdentifier> player)
     {
-        if (!sConfigMgr->GetOption<bool>("Glicko2.Enabled", true))
+        if (!sConfigMgr->GetOption<bool>("BattleGround.MMR.Enable", false))
         {
             handler->SendSysMessage("Battleground MMR system is disabled.");
             return true;

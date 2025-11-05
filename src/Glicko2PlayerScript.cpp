@@ -29,7 +29,7 @@ public:
 
     void OnPlayerLogin(Player* player) override
     {
-        if (!sConfigMgr->GetOption<bool>("Glicko2.Enabled", true))
+        if (!sConfigMgr->GetOption<bool>("BattleGround.MMR.Enable", false))
             return;
 
         sGlicko2Storage->LoadRating(player->GetGUID());
@@ -38,7 +38,7 @@ public:
 
     void OnPlayerLogout(Player* player) override
     {
-        if (!sConfigMgr->GetOption<bool>("Glicko2.Enabled", true))
+        if (!sConfigMgr->GetOption<bool>("BattleGround.MMR.Enable", false))
             return;
 
         sGlicko2Storage->SaveRating(player->GetGUID());
@@ -47,7 +47,7 @@ public:
 
     void OnPlayerSave(Player* player) override
     {
-        if (!sConfigMgr->GetOption<bool>("Glicko2.Enabled", true))
+        if (!sConfigMgr->GetOption<bool>("BattleGround.MMR.Enable", false))
             return;
 
         sGlicko2Storage->SaveRating(player->GetGUID());
@@ -55,7 +55,7 @@ public:
 
     void OnPlayerDelete(ObjectGuid guid, uint32 /*accountId*/) override
     {
-        if (!sConfigMgr->GetOption<bool>("Glicko2.Enabled", true))
+        if (!sConfigMgr->GetOption<bool>("BattleGround.MMR.Enable", false))
             return;
 
         sGlicko2Storage->RemoveRating(guid);

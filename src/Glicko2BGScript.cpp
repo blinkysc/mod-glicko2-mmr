@@ -106,7 +106,9 @@ public:
 
     void OnBattlegroundAddPlayer(Battleground* bg, Player* player) override
     {
-        if (!sConfigMgr->GetOption<bool>("Glicko2.Enabled", false))
+        bool bgEnabled = sConfigMgr->GetOption<bool>("BattleGround.MMR.Enable", false);
+        bool arenaEnabled = sConfigMgr->GetOption<bool>("Glicko2.Arena.Enabled", false);
+        if (!bgEnabled && !arenaEnabled)
             return;
 
         std::lock_guard lock(_matchMutex);
@@ -128,15 +130,10 @@ public:
 
     void OnBattlegroundEndReward(Battleground* bg, Player* player, TeamId winnerTeamId) override
     {
-        if (!sConfigMgr->GetOption<bool>("Glicko2.Enabled", false))
-            return;
-
-        // Handle arena matches separately
         if (bg->isArena())
         {
             if (!sConfigMgr->GetOption<bool>("Glicko2.Arena.Enabled", false))
                 return;
-
             std::lock_guard lock(_matchMutex);
 
             uint32 instanceId = bg->GetInstanceID();
@@ -188,10 +185,12 @@ public:
                 match.processed = true;
             }
 
-            return; // Done with arena, skip battleground logic
+            return;
         }
 
-        // Battleground logic (existing)
+        if (!sConfigMgr->GetOption<bool>("BattleGround.MMR.Enable", false))
+            return;
+
         LOG_INFO("module.glicko2", "[Glicko2] OnBattlegroundEndReward fired for player {} in BG instance {}, winner: {}",
             player->GetName(), bg->GetInstanceID(), winnerTeamId);
 
@@ -246,7 +245,9 @@ public:
 
     void OnBattlegroundRemovePlayerAtLeave(Battleground* bg, Player* player) override
     {
-        if (!sConfigMgr->GetOption<bool>("Glicko2.Enabled", false))
+        bool bgEnabled = sConfigMgr->GetOption<bool>("BattleGround.MMR.Enable", false);
+        bool arenaEnabled = sConfigMgr->GetOption<bool>("Glicko2.Arena.Enabled", false);
+        if (!bgEnabled && !arenaEnabled)
             return;
 
         LOG_INFO("module.glicko2", "[Glicko2] Player {} leaving BG instance {}, status: {}",
@@ -255,7 +256,7 @@ public:
 
     bool GetPlayerMatchmakingRating(ObjectGuid playerGuid, BattlegroundTypeId /*bgTypeId*/, float& outRating) override
     {
-        if (!sConfigMgr->GetOption<bool>("Glicko2.Enabled", false))
+        if (!sConfigMgr->GetOption<bool>("BattleGround.MMR.Enable", false))
             return false;
 
         BattlegroundRatingData data = sGlicko2Storage->GetRating(playerGuid);
@@ -265,14 +266,16 @@ public:
             return true;
         }
 
-        outRating = sConfigMgr->GetOption<float>("Glicko2.InitialRating", 1500.0f);
+        outRating = sBattlegroundMMRMgr->GetStartingRating();
         return true;
     }
 
     bool CanAddGroupToMatchingPool(BattlegroundQueue* queue, GroupQueueInfo* group, uint32 poolPlayerCount,
                                    Battleground* /*bg*/, BattlegroundBracketId bracketId) override
     {
-        if (!sConfigMgr->GetOption<bool>("Glicko2.Enabled", false))
+        bool bgEnabled = sConfigMgr->GetOption<bool>("BattleGround.MMR.Enable", false);
+        bool arenaEnabled = sConfigMgr->GetOption<bool>("Glicko2.Arena.Enabled", false);
+        if (!bgEnabled && !arenaEnabled)
             return true;
 
         if (!group || group->Players.empty())

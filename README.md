@@ -42,23 +42,36 @@ cp /path/to/dist/etc/modules/mod_glicko2_mmr.conf.dist /path/to/dist/etc/modules
 
 Edit `mod_glicko2_mmr.conf`:
 
-### Rating System
+### Battleground Rating System
 
-- `Glicko2.Enabled` - Enable/disable the system (default: 1)
-- `Glicko2.InitialRating` - Starting rating for new players (default: 1500.0)
-- `Glicko2.InitialRatingDeviation` - Starting uncertainty (default: 350.0)
-- `Glicko2.InitialVolatility` - Starting consistency measure (default: 0.06)
-- `Glicko2.Tau` - System volatility constraint (default: 0.5)
+- `BattleGround.MMR.Enable` - Enable/disable the BG MMR system (default: 0)
+- `BattleGround.MMR.StartingRating` - Starting rating for new players (default: 1500.0)
+- `BattleGround.MMR.StartingRD` - Starting rating deviation (default: 200.0)
+- `BattleGround.MMR.StartingVolatility` - Starting volatility (default: 0.06)
+- `BattleGround.MMR.SystemConstant` - System volatility constraint (default: 0.5)
 
-### Matchmaking (Requires Core Hooks)
+### Arena Rating System
 
-**Note**: These features require the battleground matchmaking hooks to be installed in AzerothCore core. See [AzerothCore PR #XXXXX](link) for the required core changes.
+- `Glicko2.Arena.Enabled` - Enable/disable the arena MMR system (default: 0)
+- `Glicko2.Arena.InitialRating` - Starting rating for new arena players (default: 1500.0)
+- `Glicko2.Arena.InitialRatingDeviation` - Starting uncertainty (default: 350.0)
+- `Glicko2.Arena.InitialVolatility` - Starting consistency measure (default: 0.06)
+- `Glicko2.Arena.Tau` - System volatility constraint (default: 0.5)
 
-- `Glicko2.Matchmaking.Enabled` - Enable MMR-based matchmaking (default: 1)
-- `Glicko2.Matchmaking.InitialRange` - Initial MMR range for matches (default: 200.0)
-- `Glicko2.Matchmaking.MaxRange` - Maximum MMR range after relaxation (default: 1000.0)
-- `Glicko2.Matchmaking.RelaxationRate` - MMR range increase per second in queue (default: 10.0)
-- `Glicko2.Matchmaking.RelaxationInterval` - Recalculation interval in seconds (default: 5)
+### Battleground Queue Relaxation
+
+- `BattleGround.MMR.QueueRelaxation.Enable` - Enable MMR range relaxation over time (default: 1)
+- `BattleGround.MMR.QueueRelaxation.InitialTolerance` - Initial MMR range (default: 200.0)
+- `BattleGround.MMR.QueueRelaxation.IntervalSeconds` - How often to expand range (default: 120)
+- `BattleGround.MMR.QueueRelaxation.StepMMR` - Increase per interval (default: 100.0)
+- `BattleGround.MMR.QueueRelaxation.MaxSeconds` - Max time before accepting any MMR (default: 600)
+
+### Arena Matchmaking (Per Bracket)
+
+Separate configuration for 2v2, 3v3, and 5v5 brackets:
+- `Glicko2.Arena.{2v2|3v3|5v5}.Matchmaking.InitialRange` - Initial MMR range
+- `Glicko2.Arena.{2v2|3v3|5v5}.Matchmaking.MaxRange` - Maximum MMR range
+- `Glicko2.Arena.{2v2|3v3|5v5}.Matchmaking.RelaxationRate` - Increase per 30 seconds
 
 ## GM Commands
 
