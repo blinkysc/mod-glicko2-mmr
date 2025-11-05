@@ -90,13 +90,6 @@ Stores current rating data for each player.
 ### `character_battleground_rating_history`
 Logs rating changes over time (currently unused, reserved for future features).
 
-## Technical Details
-
-- **Thread-Safe**: Uses `std::shared_mutex` for concurrent read/write access
-- **Cached**: Ratings loaded on login, cached in memory, saved on logout
-- **Efficient**: No database queries during active gameplay
-- **Module-Based**: Completely separate from core, easy to enable/disable
-
 ## Algorithm Credits
 
 ### Glicko-2 Rating System
