@@ -75,10 +75,23 @@ jobs:
         working-directory: azerothcore
         run: |
           if [ -f "var/build/obj/src/test/unit_tests" ]; then
-            var/build/obj/src/test/unit_tests
+            echo "Running unit tests (includes module tests)..."
+            var/build/obj/src/test/unit_tests --gtest_filter="*" --gtest_color=yes
           elif [ -f "build/src/test/unit_tests" ]; then
-            build/src/test/unit_tests
+            echo "Running unit tests (includes module tests)..."
+            build/src/test/unit_tests --gtest_filter="*" --gtest_color=yes
           else
             echo "Unit tests binary not found"
             exit 1
+          fi
+
+      - name: Run module-specific tests only
+        working-directory: azerothcore
+        run: |
+          if [ -f "var/build/obj/src/test/unit_tests" ]; then
+            echo "Running mod-glicko2-mmr tests only..."
+            var/build/obj/src/test/unit_tests --gtest_filter="*Glicko*:*Arena*:*Battleground*" --gtest_color=yes || echo "No module tests matched filter"
+          elif [ -f "build/src/test/unit_tests" ]; then
+            echo "Running mod-glicko2-mmr tests only..."
+            build/src/test/unit_tests --gtest_filter="*Glicko*:*Arena*:*Battleground*" --gtest_color=yes || echo "No module tests matched filter"
           fi
