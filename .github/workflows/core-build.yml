@@ -12,6 +12,73 @@ on:
 
 jobs:
   build:
-    uses: azerothcore/reusable-workflows/.github/workflows/core_build_modules.yml@main
-    with:
-      module_repo: ${{ github.event.repository.name }}
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [clang]
+
+    steps:
+      - name: Checkout AzerothCore
+        uses: actions/checkout@v3
+        with:
+          repository: azerothcore/azerothcore-wotlk
+          ref: master
+          path: azerothcore
+
+      - name: Apply prerequisite PR #23543 (Arena hooks)
+        working-directory: azerothcore
+        run: |
+          git fetch origin pull/23543/head:pr-23543
+          git merge --no-edit pr-23543
+
+      - name: Checkout module
+        uses: actions/checkout@v3
+        with:
+          path: azerothcore/modules/mod-glicko2-mmr
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            clang \
+            cmake \
+            build-essential \
+            libmysqlclient-dev \
+            libssl-dev \
+            libbz2-dev \
+            libreadline-dev \
+            libncurses-dev \
+            mysql-server \
+            libboost-all-dev
+
+      - name: Configure
+        working-directory: azerothcore
+        run: |
+          mkdir -p build
+          cd build
+          cmake ../ \
+            -DCMAKE_INSTALL_PREFIX=$HOME/azerothcore-install \
+            -DCMAKE_C_COMPILER=/usr/bin/clang \
+            -DCMAKE_CXX_COMPILER=/usr/bin/clang++ \
+            -DWITH_WARNINGS=1 \
+            -DTOOLS_BUILD=none \
+            -DSCRIPTS=static \
+            -DMODULES=static \
+            -DBUILD_TESTING=ON
+
+      - name: Build
+        working-directory: azerothcore/build
+        run: make -j$(nproc)
+
+      - name: Run unit tests
+        working-directory: azerothcore
+        run: |
+          if [ -f "var/build/obj/src/test/unit_tests" ]; then
+            var/build/obj/src/test/unit_tests
+          elif [ -f "build/src/test/unit_tests" ]; then
+            build/src/test/unit_tests
+          else
+            echo "Unit tests binary not found"
+            exit 1
+          fi
